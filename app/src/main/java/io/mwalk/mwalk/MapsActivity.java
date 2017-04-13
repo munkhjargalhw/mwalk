@@ -3,6 +3,7 @@ package io.mwalk.mwalk;
 import android.*;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -10,12 +11,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -49,9 +54,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             locationListener = new MyLocationListener();
             if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 //bairshliig 5000ms secund tutamd shalgah heseg
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, locationListener);
             } else  {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, locationListener);
             }
         } else {
             //bairshliin erh ugugduugui bol erh avah huselt yavuulah
@@ -65,6 +70,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         switch (requestCode) {
             case GPS_REQUEST_CODE:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "has permission", Toast.LENGTH_SHORT)
+                            .show();
                     getLocation();
                 } else {
                     Toast.makeText(this, "LOCATION permission denied", Toast.LENGTH_SHORT)
@@ -81,10 +88,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //bairshil uurchlugduh ues gazriin zurgiig shinechleh
             latitude = ""+loc.getLatitude();
             longitude = ""+loc.getLongitude();
+            Toast.makeText(getApplicationContext(), "loc="+latitude+":"+longitude, Toast.LENGTH_LONG).show();
             LatLng ub = new LatLng(loc.getLatitude(), loc.getLongitude());
             mMap.moveCamera(CameraUpdateFactory.newLatLng(ub));
             CameraUpdate zoom = CameraUpdateFactory.zoomTo(17);
             mMap.animateCamera(zoom);
+
+            MarkerOptions marker = new MarkerOptions().position(ub).title(latitude+":"+longitude);
+            marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.dot));
+            mMap.addMarker(marker);
         }
         @Override
         public void onProviderDisabled(String provider) {}
@@ -103,6 +115,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ub));
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(0);
         mMap.animateCamera(zoom);
+
+        MarkerOptions marker = new MarkerOptions().position(new LatLng(47.918913, 106.917422)).title("Start");
+        marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.dot));
+        mMap.addMarker(marker);
+
+//        mMap.addCircle(new CircleOptions()
+//                .center(ub)
+//                .radius(10)
+//                .strokeColor(Color.RED)
+//                .fillColor(Color.BLUE));
+
         getLocation();
     }
 }
