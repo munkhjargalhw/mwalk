@@ -3,7 +3,10 @@ package io.mwalk.mwalk;
 import android.*;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,6 +15,9 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -33,15 +39,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String latitude = null;
     private String longitude = null;
     private static final int GPS_REQUEST_CODE = 1;
+    Bitmap mDotMarkerBitmap;
+    private double alldistance = 0;
+    private LatLng previousloc = null;
+    Button start;
+    TextView distance;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //tsonh uuseh ued ajillah heseg
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        int px = getResources().getDimensionPixelSize(R.dimen.map_dot_marker_size);
+        mDotMarkerBitmap = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(mDotMarkerBitmap);
+        Drawable shape = getResources().getDrawable(R.drawable.circle);
+        shape.setBounds(0, 0, mDotMarkerBitmap.getWidth(), mDotMarkerBitmap.getHeight());
+        shape.draw(canvas);
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        distance = (TextView) findViewById(R.id.distance);
+        start = (Button) findViewById(R.id.start);
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alldistance = 0;
+                previousloc = null;
+                distance.setText("0");
+            }
+        });
     }
     private void getLocation(){
         String permission = "android.permission.ACCESS_FINE_LOCATION";
@@ -90,12 +120,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             longitude = ""+loc.getLongitude();
             Toast.makeText(getApplicationContext(), "loc="+latitude+":"+longitude, Toast.LENGTH_LONG).show();
             LatLng ub = new LatLng(loc.getLatitude(), loc.getLongitude());
+
+            /*check later if location not fake*/
+            if(previousloc.equals(null)){
+                previousloc = ub;
+            }
+            double lastdistance = calcdistance(ub.latitude, ub.longitude, previousloc.latitude, previousloc.longitude);
+            alldistance += lastdistance;
+            distance.setText(""+alldistance);
+            previousloc = ub;
+
             mMap.moveCamera(CameraUpdateFactory.newLatLng(ub));
             CameraUpdate zoom = CameraUpdateFactory.zoomTo(17);
             mMap.animateCamera(zoom);
 
             MarkerOptions marker = new MarkerOptions().position(ub).title(latitude+":"+longitude);
-            marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.dot));
+            marker.icon(BitmapDescriptorFactory.fromBitmap(mDotMarkerBitmap));
             mMap.addMarker(marker);
         }
         @Override
@@ -117,7 +157,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.animateCamera(zoom);
 
         MarkerOptions marker = new MarkerOptions().position(new LatLng(47.918913, 106.917422)).title("Start");
-        marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.dot));
+        marker.icon(BitmapDescriptorFactory.fromBitmap(mDotMarkerBitmap));
         mMap.addMarker(marker);
 
 //        mMap.addCircle(new CircleOptions()
@@ -127,5 +167,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                .fillColor(Color.BLUE));
 
         getLocation();
+    }
+    private double calcdistance(double lat1, double lon1, double lat2, double lon2) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1))
+                * Math.sin(deg2rad(lat2))
+                + Math.cos(deg2rad(lat1))
+                * Math.cos(deg2rad(lat2))
+                * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        return (dist);
+    }
+
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
     }
 }
