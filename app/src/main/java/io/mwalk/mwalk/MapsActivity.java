@@ -69,7 +69,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 alldistance = 0;
                 previousloc = null;
-                distance.setText("0");
+                distance.setText("0km");
             }
         });
     }
@@ -100,8 +100,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         switch (requestCode) {
             case GPS_REQUEST_CODE:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "has permission", Toast.LENGTH_SHORT)
-                            .show();
                     getLocation();
                 } else {
                     Toast.makeText(this, "LOCATION permission denied", Toast.LENGTH_SHORT)
@@ -124,11 +122,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             /*check later if location not fake*/
             if(previousloc.equals(null)){
                 previousloc = ub;
+            } else {
+                double lastdistance = calcdistance(ub.latitude, ub.longitude, previousloc.latitude, previousloc.longitude);
+                alldistance += lastdistance;
+                distance.setText(String.valueOf(alldistance)+"km");
+                previousloc = ub;
+                Toast.makeText(getApplicationContext(), "Dist="+String.valueOf(lastdistance), Toast.LENGTH_LONG).show();
             }
-            double lastdistance = calcdistance(ub.latitude, ub.longitude, previousloc.latitude, previousloc.longitude);
-            alldistance += lastdistance;
-            distance.setText(""+alldistance);
-            previousloc = ub;
 
             mMap.moveCamera(CameraUpdateFactory.newLatLng(ub));
             CameraUpdate zoom = CameraUpdateFactory.zoomTo(17);
@@ -155,10 +155,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ub));
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(0);
         mMap.animateCamera(zoom);
-
-        MarkerOptions marker = new MarkerOptions().position(new LatLng(47.918913, 106.917422)).title("Start");
-        marker.icon(BitmapDescriptorFactory.fromBitmap(mDotMarkerBitmap));
-        mMap.addMarker(marker);
 
 //        mMap.addCircle(new CircleOptions()
 //                .center(ub)
