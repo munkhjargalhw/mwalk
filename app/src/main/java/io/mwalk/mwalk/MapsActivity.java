@@ -41,7 +41,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int GPS_REQUEST_CODE = 1;
     Bitmap mDotMarkerBitmap;
     private double alldistance = 0;
-    private LatLng previousloc = null;
+    public LatLng previousloc = new LatLng(0,0);
     Button start;
     TextView distance;
     @Override
@@ -51,6 +51,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
+        //Газрын зурганд зурагдах цэгийг үүсгэх
         int px = getResources().getDimensionPixelSize(R.dimen.map_dot_marker_size);
         mDotMarkerBitmap = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(mDotMarkerBitmap);
@@ -64,12 +65,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         distance = (TextView) findViewById(R.id.distance);
         start = (Button) findViewById(R.id.start);
+        //Эхлэх товч дарахад ажиллах функц
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Эхлэх дарагдахад нийт замыг болон бүх утгуудыг тэглэх үйлдэл
                 alldistance = 0;
-                previousloc = null;
-                distance.setText("0km");
+                previousloc = new LatLng(0,0);
+                distance.setText("0м");
             }
         });
     }
@@ -95,6 +98,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     GPS_REQUEST_CODE);
         }
     }
+    //гар утасны permission-ы хүсэлт явуулах үед ажиллана
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
@@ -116,24 +120,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //bairshil uurchlugduh ues gazriin zurgiig shinechleh
             latitude = ""+loc.getLatitude();
             longitude = ""+loc.getLongitude();
-            Toast.makeText(getApplicationContext(), "loc="+latitude+":"+longitude, Toast.LENGTH_LONG).show();
             LatLng ub = new LatLng(loc.getLatitude(), loc.getLongitude());
-
-            /*check later if location not fake*/
-            if(previousloc.equals(null)){
+            //анхны байршил эсэхийг шалгах
+            if(previousloc.latitude == 0){
+                //анхны утгыг өгөх
                 previousloc = ub;
             } else {
+                //сүүлчийн цэгээс өмнөх цэг хүртэлх зайг тооцоолох
                 double lastdistance = calcdistance(ub.latitude, ub.longitude, previousloc.latitude, previousloc.longitude);
+                //сүүлчийн зайг өмнөх бүх зайд нэмж нийт явсан замыг тооцох
                 alldistance += lastdistance;
-                distance.setText(String.valueOf(alldistance)+"km");
+                //нийт явсан замыг дэлгэцэнд гаргах
+                distance.setText(String.valueOf(Math.round(alldistance*1000))+"м");
                 previousloc = ub;
-                Toast.makeText(getApplicationContext(), "Dist="+String.valueOf(lastdistance), Toast.LENGTH_LONG).show();
             }
-
+            //газрын зурганд шинэ байршлыг харуулах
             mMap.moveCamera(CameraUpdateFactory.newLatLng(ub));
             CameraUpdate zoom = CameraUpdateFactory.zoomTo(17);
             mMap.animateCamera(zoom);
 
+            //газрын зурганд шинэ цэг үүсгэх
             MarkerOptions marker = new MarkerOptions().position(ub).title(latitude+":"+longitude);
             marker.icon(BitmapDescriptorFactory.fromBitmap(mDotMarkerBitmap));
             mMap.addMarker(marker);
@@ -164,6 +170,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         getLocation();
     }
+
+    //2 цэгийн хоорондох зайг тооцоолох
     private double calcdistance(double lat1, double lon1, double lat2, double lon2) {
         double theta = lon1 - lon2;
         double dist = Math.sin(deg2rad(lat1))
@@ -176,11 +184,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         dist = dist * 60 * 1.1515;
         return (dist);
     }
-
+    //өнцгийг рад
     private double deg2rad(double deg) {
         return (deg * Math.PI / 180.0);
     }
-
+    //рад-ыг өнцөг
     private double rad2deg(double rad) {
         return (rad * 180.0 / Math.PI);
     }
