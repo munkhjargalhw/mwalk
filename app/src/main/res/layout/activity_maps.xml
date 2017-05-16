@@ -16,14 +16,31 @@
         android:padding="10dp"
         android:layout_marginBottom="10dp"
         android:paddingRight="10dp"/>
-    <TextView
-        android:id="@+id/distance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right|bottom"
-        android:text="0km"
-        android:padding="10dp"
-        android:layout_marginBottom="10dp"
-        android:paddingRight="10dp">
-    </TextView>
+        <TextView
+            android:id="@+id/calories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0cal"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:padding="10dp"
+            android:layout_gravity="right|bottom"
+            android:layout_marginBottom="35dp"
+            android:paddingRight="10dp"
+            >
+        </TextView>
+        <TextView
+            android:id="@+id/distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0km"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:padding="10dp"
+            android:layout_marginBottom="10dp"
+            android:paddingRight="10dp"
+            android:layout_gravity="right|bottom"
+            >
+        </TextView>
 </fragment>

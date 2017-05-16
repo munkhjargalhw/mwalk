@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
@@ -13,8 +12,6 @@ import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,8 +22,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -44,6 +39,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public LatLng previousloc = new LatLng(0,0);
     Button start;
     TextView distance;
+    TextView calories;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //tsonh uuseh ued ajillah heseg
@@ -64,6 +60,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         distance = (TextView) findViewById(R.id.distance);
+        calories = (TextView) findViewById(R.id.calories);
+
         start = (Button) findViewById(R.id.start);
         //Эхлэх товч дарахад ажиллах функц
         start.setOnClickListener(new View.OnClickListener() {
@@ -132,6 +130,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 alldistance += lastdistance;
                 //нийт явсан замыг дэлгэцэнд гаргах
                 distance.setText(String.valueOf(Math.round(alldistance*1000))+"м");
+                double allcalories = calccal(alldistance * 1000);
+                calories.setText(String.valueOf(Math.round(allcalories))+"cal");
+
                 previousloc = ub;
             }
             //газрын зурганд шинэ байршлыг харуулах
@@ -159,7 +160,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //anhnii bairshlig zaaj ter gazart ochih
         LatLng ub = new LatLng(47.918913, 106.917422);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ub));
-        CameraUpdate zoom = CameraUpdateFactory.zoomTo(0);
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(13);
         mMap.animateCamera(zoom);
 
 //        mMap.addCircle(new CircleOptions()
@@ -191,5 +192,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //рад-ыг өнцөг
     private double rad2deg(double rad) {
         return (rad * 180.0 / Math.PI);
+    }
+
+    private double calccal(double distance){
+        /*
+        * walking:
+        * weight = 64kg
+        * speed = 5.6km/hours
+        * calories = 45
+        * */
+
+        // 65kg 67 calories per kilometer
+        // 67 / 1000 = 0.067 cal per meter
+        return distance * 0.067;
     }
 }
