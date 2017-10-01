@@ -1,2 +1,0 @@
-# mwalk
-Tusliin ajil
